@@ -1,0 +1,84 @@
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="ibox">
+                <div class="ibox-title"> <h5>编辑用户信息</h5>
+                </div>
+                <div class="ibox-content">
+                    <div class="modal-body">
+                        <form name="user_form" class="form-horizontal" novalidate ng-submit="userForm()">
+                            <div class="form-group"><label class="col-sm-2 control-label">域账号</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" value="{{ user.user_sso_uid }}" class="form-control" name="user_sso_uid" ng-model="user.user_sso_uid" ng-minlength="1" ng-change="changeSsoUid()" required>
+                                </div>
+                                <div class="col-sm-10" ng-show="user_form.user_sso_uid.$invalid && user_form.submitted">
+                                    <small class="text-danger" ng-show="user_form.user_sso_uid.$error">请填写正确的域账号并验证</small>
+                                </div>
+                            </div>
+                            <div class="form-group"><label class="col-sm-2 control-label"></label>
+                                <div class="col-sm-10">
+                                    <small class="label" ng-click="verifyUser()">验证域账号：</small>&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <span ng-if="user.user_name != 'null'" >{{user.user_name}}</span>&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <span ng-if="user.user_email != 'null'" >{{user.user_email}}</span>&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <span ng-if="user.code != 200" >{{user.msg}}</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">机器组</label>
+                                <div class="col-sm-10">
+                                    <a ng-repeat="ipgroup in user.user_ipgroup" href="#/jumpbox/ipgroup?ipgroupid={{ipgroup.ipgroup_id}}" target="_blank"> {{ipgroup.ipgroup_name}} <i class="fa fa-times" ng-click="removeIpgroupToUser($index)"></i><br></a>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="col-sm-2 control-label">
+                                    id_rsa.pub
+                                    <a ng-click="editIdRsa()">编辑</a>
+                                </label>
+                                <div class="col-sm-10">
+                                    <textarea id="idRsaTextarea" readonly="readonly" class="form-control" placeholder="id_rsa.pub" style="height:105px;" ng-model="user.user_id_rsa_pub" name="user_id_rsa_pub"></textarea>
+                                </div>
+                            </div>
+                            <div class="hr-line-dashed"></div>
+                            <div class="form-group">
+                                <div class="col-sm-4 col-sm-offset-2">
+                                    <button class="btn btn-primary" type="submit">保存</button>
+                                    <button type="button" class="btn btn-white" ng-click="cancel()">取消</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="ibox">
+                <div class="ibox-content" >
+                    <table datatable="" dt-options="dtOptions" dt-columns="dtColumns" dt-instance="dtInstance" class="table table-hover"></table>
+                    <!-- <table datatable="ng" dt-options="dtOptions" class="table table-striped table-bordered table-hover dataTables-example">
+                        <thead>
+                            <tr>
+                                <th>组名</th>
+                                <th>描述</th>
+                                <th style="display: none;">添加时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="ipgroup in ipgroupList">
+                                <td>{{ipgroup.ipgroup_name}}</td>
+                                <td>{{ipgroup.ipgroup_desc}}</td>
+                                <td style="display: none;">{{item.ipgroup_add_time * 1000 | date:'yyyy-MM-dd HH:mm'}}</td>
+                                <td>
+                                    <a ng-click="addIpgroupToUser(ipgroup)" ng-hide="verifyIpgroupAdded(ipgroup, user)">添加</a>
+                                    <span ng-show="verifyIpgroupAdded(ipgroup, user)">
+                                        <i class="fa fa-check-circle-o"></i>已添加
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table> -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

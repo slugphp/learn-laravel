@@ -1,0 +1,33 @@
+{
+  "name": "slup-laravel",
+  "version": "0.1.0",
+  "description": "laravel admin",
+  "main": "index.js",
+  "scripts": {
+    "start": "gulp default"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wilon/slug-laravel.git"
+  },
+  "keywords": [
+    "laravel",
+    "admin",
+    "ui"
+  ],
+  "author": "wilon <github.com/wilon>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/wilon/slug-laravel/issues"
+  },
+  "homepage": "https://github.com/wilon/slug-laravel#readme",
+  "dependencies" : {
+    "del": "^2.2.2",
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.1",
+    "gulp-minify-css": "^1.2.4",
+    "gulp-uglify": "^2.1.2"
+  },
+  "devDependencies": {
+  }
+}

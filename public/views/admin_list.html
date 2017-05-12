@@ -1,0 +1,26 @@
+<div class="row wrapper border-bottom white-bg page-heading animated fadeInRight">
+    <div class="col-lg-8">
+        <h2>管理员列表</h2>
+    </div>
+    <div class="col-lg-4">
+    </div>
+</div>
+<div ng-controller="AdminListCtrl" class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <div class="col-lg-8">
+                        <h5>用户列表&nbsp;&nbsp;&nbsp;&nbsp;</h5>
+                    </div>
+                    <div class="col-lg-4">
+                        <h5><a class="btn btn-block btn-primary" style="line-height: 1; margin-top: -6px;" ng-click="modifyAdmin({})">添加用户</a></h5>
+                    </div>
+                </div>
+                <div class="ibox-content">
+                    <table datatable="" dt-options="dtOptions" dt-columns="dtColumns" dt-instance="dtInstance" class="table table-hover"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

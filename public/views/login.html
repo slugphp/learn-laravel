@@ -1,0 +1,21 @@
+<div class="wrapper middle-box text-center animated fadeInDown" ng-controller="LoginCtrl">
+    <style type="text/css">
+        .navbar-static-side {display: none}
+        .border-bottom {display: none}
+        .footer {display: none}
+    </style>
+    <div>
+        <h3>欢迎来到{{AppConfig.name}}</h3>
+        <p>请先登录</p>
+        <form class="m-t" role="form" ng-submit="doLogin()">
+            <div class="form-group">
+                <input type="name" value="{{user.name}}" class="form-control" placeholder="用户名" required="" ng-model="user.name">
+            </div>
+            <div class="form-group">
+                <input type="password" value="{{user.password}}" class="form-control" placeholder="密码" required="" ng-model="user.password">
+            </div>
+            <button type="submit" class="btn btn-primary block full-width m-b">登陆</button>
+        </form>
+        <p class="m-t"> <small>{{AppConfig.company}} &copy; {{AppConfig.year}}</small> </p>
+    </div>
+</div>

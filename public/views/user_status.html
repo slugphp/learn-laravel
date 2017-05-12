@@ -1,0 +1,29 @@
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">更改用户状态</div>
+                <div class="ibox-content">
+                    <div class="modal-body">
+                        <form name="user_form" class="form-horizontal" novalidate ng-submit="userForm()">
+                            <div class="form-group">
+                                <div class="col-sm-12">
+                                    <div><label ><input type="radio" ng-checked="user.user_status == 2" ng-model="user.user_status" value="2" name="user_status"> 管理员</label>（拥有跳板机后台权限）</div>
+                                    <div><label><input type="radio" ng-checked="user.user_status == 1" ng-model="user.user_status" value="1" name="user_status"> 正常</label>（普通用户）</div>
+                                    <div><label><input type="radio" ng-checked="user.user_status == -1" ng-model="user.user_status" value="-1" name="user_status"> 禁用</label>（禁止登陆任何机器）</div>
+                                </div>
+                            </div>
+                            <div class="hr-line-dashed"></div>
+                            <div class="form-group">
+                                <div >
+                                    <button class="btn btn-primary" type="submit">保存</button>
+                                    <button type="button" class="btn btn-white" ng-click="cancel()">取消</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
