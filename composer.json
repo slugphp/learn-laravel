@@ -6,7 +6,9 @@
     "type": "project",
     "require": {
         "php": ">=5.5.9",
-        "laravel/framework": "5.2.*"
+        "laravel/framework": "5.2.*",
+        "wilon/simple-php-debug": "^0.1.7",
+        "guzzlehttp/guzzle": "^6.2"
     },
     "repositories": [ {
         "type": "package",
