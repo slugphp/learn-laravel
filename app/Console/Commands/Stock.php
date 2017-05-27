@@ -14,12 +14,22 @@ class Stock extends Command
     protected $signature = 'stock {action}';
 
     /**
-     * The console command description.
-     *
-     * @var string
+     * {@inheritdoc}
      */
-    protected $description = "stock
-                            {action : syncIndustry 同步行业\nsyncComment 同步评论}";
+    protected function configure()
+    {
+        $this
+            ->setName('stock')
+            ->setDescription('stock commands')
+            ->setHelp(<<<'EOF'
+同步新浪行业:
+  <info>php %command.full_name% syncIndustry</info>
+同步腾讯评论:
+  <info>php %command.full_name% syncComment</info>
+EOF
+            )
+        ;
+    }
 
     /**
      * Create a new command instance.
