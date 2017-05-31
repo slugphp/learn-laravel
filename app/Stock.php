@@ -21,8 +21,14 @@ class Stock
 
     public function getAllStock()
     {
-        return $allStock = DB::table('stock')
+        $allStock = DB::table('stock')
             ->pluck('stock_symbol');
+        // foreach ($allStock as $k => $stockSymbol) {
+        //     if (strpos($stockSymbol, 'sh') === false) {
+        //         unset($allStock[$k]);
+        //     }
+        // }
+        return array_values($allStock);
     }
 
     public function syncIndustry()
@@ -56,18 +62,25 @@ class Stock
             $stockData = json_decode($json, true);
             // 写入数据库
             foreach ($stockData as $stock) {
-                if (DB::table('stock')->where('stock_symbol', $stock['symbol'])->first()) continue;
-                $stockId[] = DB::table('stock')
-                    ->insertGetId([
-                            'stock_symbol' => $stock['symbol'],
-                            'stock_name' => $stock['name'],
-                            'stock_industry' => $industryName,
-                            'stock_sina_node' => $sinaNode,
-                        ]);
+                $upData = [
+                        'stock_symbol' => $stock['symbol'],
+                        'stock_name' => $stock['name'],
+                        'stock_industry' => $industryName,
+                        'stock_trade' => $stock['trade'],
+                        'stock_volume' => $stock['volume'],
+                    ];
+                $hasStock = DB::table('stock')->where('stock_symbol', $stock['symbol'])->first();
+                if ($hasStock) {
+                    $stockId[] = DB::table('stock')
+                        ->where('stock_id', $hasStock->stock_id)
+                        ->update($upData);
+                } else {
+                    $stockId[] = DB::table('stock')
+                        ->insertGetId($upData);
+                }
             }
         }
         echo "Insert " . count($stockId);
-        die(simple_dump($stock));
     }
 
     public function getMoneyFlow()
@@ -105,6 +118,8 @@ class Stock
         $qqComment = [];
         $preg = ['/\<(.*?)\:(.*?)\>/is', '/\[[a-z]+\d+(.*?)\]/is'];
         $replace = ['//@\\2: ', ''];
+        $time = time();
+        $timeOutDay = 14 * 86400;
 
         foreach ($this->allStock as $stockSymbol) {
             // $stockSymbol = 'sh000001';
@@ -113,26 +128,39 @@ class Stock
             $data = json_decode($res, true);
             if (!$data) continue;
             $subjectDict = $data['data']['subject_dict'];
-            // 已有评论
+            // 已有评论，去掉旧的
             $hasComment = DB::table('stock_qq_comment')
                 ->where('stock_symbol', $stockSymbol)
                 ->first();
-            // 解析评论
             $stockComment = $hasComment ? $hasComment->stock_comment : '';
+            $stockCommentArr = [];
+            foreach (explode("\r\n", $stockComment) as $k => $v) {
+                $isMatch = preg_match_all('/\[([0-9-:\s]*)\]/', $v, $matches);
+                if (!$isMatch) continue;
+                $commentTime = strtotime(trim($matches[1][0]));
+                if ($commentTime < 1) continue;
+                if ($time - $commentTime > $timeOutDay) continue;
+                $stockCommentArr[] = $v;
+            }
+            $stockComment = implode("\r\n", $stockCommentArr);
+            // 解析已有评论
             foreach (array_reverse($data['data']['rss_list']) as $comment) {
+                // 筛选时间
+                $createdTime = strtotime($comment['created_at']);
+                if ($time - $createdTime > $timeOutDay) continue;
+                // 获取内容
                 $content = isset($comment['content']) && $comment['content']
-                        ? $comment['content']
-                        : $subjectDict[$comment['subject_id']]['content'];
+                    ? $comment['content']
+                    : $subjectDict[$comment['subject_id']]['content'];
                 $contentAt = isset($comment['root_id'])
-                        ? (
-                            isset($subjectDict[$comment['root_id']]['content'])
-                                ? $subjectDict[$comment['root_id']]['content']
-                                : '已被删除'
-                            )
-                        : '';
-
+                    ? (
+                        isset($subjectDict[$comment['root_id']]['content'])
+                            ? $subjectDict[$comment['root_id']]['content']
+                            : '已被删除'
+                        )
+                    : '';
                 // 格式化
-                $createdAt = date("Y-m-d H:i:s", strtotime($comment['created_at']));
+                $createdAt = date("Y-m-d H:i:s", $createdTime);
                 $content = preg_replace($preg, $replace, $content);
                 $contentAt = preg_replace($preg, $replace, $contentAt);
                 $content = preg_replace_callback('/./u', function (array $match) {
@@ -147,7 +175,6 @@ class Stock
                 // 拼接
                 $commentLine = "[ {$createdAt} ]". $content
                     . ($contentAt ? " //#$contentAt" : '') . "\r\n";
-
                 if ($content && strpos($stockComment, $content) !== false) {
                     continue;
                 } else {
@@ -159,6 +186,7 @@ class Stock
                     'stock_symbol' => $stockSymbol,
                     'stock_comment' => trim($stockComment),
                 ];
+            echo "Success $stockSymbol\r\n";
             if ($hasComment) {
                 $qqComment[] = DB::table('stock_qq_comment')
                     ->where('stock_symbol', $stockSymbol)
