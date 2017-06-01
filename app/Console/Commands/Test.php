@@ -30,8 +30,6 @@ class Test extends Command
      */
     public function handle()
     {
-
-            $email = new \App\Models\sendLanternEmail();
-            $email->check();
+        die(simple_dump($res));
     }
 }

@@ -9,7 +9,8 @@
         "laravel/framework": "5.2.*",
         "wilon/simple-php-debug": "^0.1.7",
         "guzzlehttp/guzzle": "^6.2",
-        "predis/predis": "^1.1"
+        "predis/predis": "^1.1",
+        "imangazaliev/didom": "^1.10"
     },
     "repositories": [ {
         "type": "package",

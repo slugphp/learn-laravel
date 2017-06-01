@@ -14,6 +14,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         //
+        set_error_handler(null);
+        set_exception_handler(null);
     }
 
     /**

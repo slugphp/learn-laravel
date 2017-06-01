@@ -4,6 +4,7 @@ namespace App\Models;
 
 use DB;
 use GuzzleHttp\Client as Http;
+use DiDom\Document;
 
 class Stock
 {
@@ -187,6 +188,50 @@ class Stock
                     'stock_comment' => trim($stockComment),
                 ];
             echo "Success $stockSymbol\r\n";
+            if ($hasComment) {
+                $qqComment[] = DB::table('stock_qq_comment')
+                    ->where('stock_symbol', $stockSymbol)
+                    ->update($commentData);
+            } else {
+                $qqComment[] = DB::table('stock_qq_comment')
+                    ->insertGetId($commentData);
+            }
+        }
+        echo "Total " . count($qqComment);
+    }
+
+    public function getSinaGuba()
+    {
+        $url = 'http://guba.sina.com.cn/?s=bar&name=';
+        $http = new Http();
+        $qqComment = [];
+        $preg = ['/\<(.*?)\:(.*?)\>/is', '/\[[a-z]+\d+(.*?)\]/is'];
+        $replace = ['//@\\2: ', ''];
+        $time = time();
+        $timeOutDay = 14 * 86400;
+
+        foreach ($this->allStock as $stockSymbol) {
+            $html = (string) $http->get($url . $stockSymbol)->getBody();
+            try {
+                $html = iconv('GBK', 'UTF-8//ignore', $html);
+            } catch (Exception $e) {
+
+            }
+            $document = new Document();
+            $document->loadHtml($html);
+            $posts = $document->find('a.linkblack::text');
+            if (empty($posts)) continue;
+            $stockComment = implode("\r\n", $posts);
+            // 更改数据
+            $commentData = [
+                    'stock_symbol' => $stockSymbol,
+                    'stock_comment' => trim($stockComment),
+                ];
+            echo "Success $stockSymbol\r\n";
+
+            $hasComment = DB::table('stock_qq_comment')
+                ->where('stock_symbol', $stockSymbol)
+                ->first();
             if ($hasComment) {
                 $qqComment[] = DB::table('stock_qq_comment')
                     ->where('stock_symbol', $stockSymbol)
