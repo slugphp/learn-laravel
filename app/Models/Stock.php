@@ -1,6 +1,6 @@
 <?php
 
-namespace App;
+namespace App\Models;
 
 use DB;
 use GuzzleHttp\Client as Http;

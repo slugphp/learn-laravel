@@ -49,7 +49,7 @@ EOF
     public function handle()
     {
         $action = $this->argument('action');
-        $stock = new \App\Stock();
+        $stock = new \App\Models\Stock();
         if (!method_exists($stock, $action)) {
             return $this->error('Wrong action!');
         }

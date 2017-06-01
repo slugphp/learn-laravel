@@ -17,6 +17,7 @@ class CreateStockTable extends Migration
             $table->string('stock_symbol')->unique();
             $table->string('stock_name');
             $table->string('stock_industry');
+            $table->integer('stock_volume');
             $table->double('stock_trade', 15, 8);
         });
     }
