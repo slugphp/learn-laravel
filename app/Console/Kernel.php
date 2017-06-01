@@ -15,7 +15,8 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         Commands\Inspire::class,
         \App\Console\Commands\RegisterUser::class,
-        \App\Console\Commands\Stock::class
+        \App\Console\Commands\Service::class,
+        \App\Console\Commands\Test::class
     ];
 
     /**
