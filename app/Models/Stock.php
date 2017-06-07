@@ -204,30 +204,36 @@ class Stock
     {
         $url = 'http://guba.sina.com.cn/?s=bar&name=';
         $http = new Http();
-        $qqComment = [];
-        $preg = ['/\<(.*?)\:(.*?)\>/is', '/\[[a-z]+\d+(.*?)\]/is'];
-        $replace = ['//@\\2: ', ''];
-        $time = time();
-        $timeOutDay = 14 * 86400;
-
+        $search = ['分钟前', '今天'];
+        $replace = [' min ago', ''];
+        $now = time();
+        $wee = strtotime(date('Y-m-d'));
+        echo date('Y-m-d H:i:s') . substr((string) microtime(), 1, 6), "\r\n";
         foreach ($this->allStock as $stockSymbol) {
             $html = (string) $http->get($url . $stockSymbol)->getBody();
-            try {
-                $html = iconv('GBK', 'UTF-8//ignore', $html);
-            } catch (Exception $e) {
-
-            }
+            $html = iconv('GBK', 'UTF-8//ignore', $html);
             $document = new Document();
             $document->loadHtml($html);
-            $posts = $document->find('a.linkblack::text');
-            if (empty($posts)) continue;
-            $stockComment = implode("\r\n", $posts);
+            $posts = $document->find('.table_content tr');
+            $stockTitleArr = [];
+            foreach ($posts as $post) {
+                $a = $post->find('.linkblack');
+                if (!$a) continue;
+                $td = $post->find('td');
+                $timeDesc = str_replace($search, $replace, trim(end($td)->text()));
+                $time = strtotime($timeDesc);
+                if ($time < $wee) break;
+                $timeRes = date('Y-m-d H:i:s', $time);
+                $title = trim($post->find('.linkblack')[0]->text());
+                $stockTitleArr[] = "[ {$timeRes} ] $title";
+            }
+            if (empty($stockTitleArr)) continue;
+            $stockComment = implode("\r\n", $stockTitleArr);
             // 更改数据
             $commentData = [
                     'stock_symbol' => $stockSymbol,
                     'stock_comment' => trim($stockComment),
                 ];
-            echo "Success $stockSymbol\r\n";
 
             $hasComment = DB::table('stock_qq_comment')
                 ->where('stock_symbol', $stockSymbol)
@@ -241,6 +247,7 @@ class Stock
                     ->insertGetId($commentData);
             }
         }
-        echo "Total " . count($qqComment);
+        echo date('Y-m-d H:i:s') . substr((string) microtime(), 1, 6), "\r\n";
+        echo "Total ", count($qqComment), "\r\n";
     }
 }
