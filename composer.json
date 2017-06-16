@@ -10,7 +10,8 @@
         "wilon/simple-php-debug": "^0.1.7",
         "guzzlehttp/guzzle": "^6.2",
         "predis/predis": "^1.1",
-        "imangazaliev/didom": "^1.10"
+        "imangazaliev/didom": "^1.10",
+        "adldap2/adldap2": "^7.0"
     },
     "repositories": [ {
         "type": "package",
