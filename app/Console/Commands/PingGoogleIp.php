@@ -37,11 +37,9 @@ class PingGoogleIp extends Command
     {
         // $this->pingGoogleIncIp2();
         $ipArr = [
-            '61.91.161.*',
             '172.217.24.*',
             '216.58.193.*',
             '216.58.200.*',
-            '216.58.221.*',
         ];
 
         echo date('Y-m-d H:i:s') . substr((string) microtime(), 1, 6), "\r\n";
@@ -67,6 +65,8 @@ class PingGoogleIp extends Command
                     $results[$ip]++;
                 }
             }
+
+            asort($results);
             Storage::put($resFile, indentToJson($results) . "\r\n" . date('Y-m-d H:i:s'));
         }
     }
