@@ -12,11 +12,16 @@
 */
 
 
+// auth
 Route::any('/', 'AuthController@index');
 
 Route::any('/auth/check', 'AuthController@check');
 Route::any('/auth/login', 'AuthController@login');
 Route::any('/auth/logout', 'AuthController@logout');
+
+// public test
+Route::controller('test',"TestController");
+Route::any('adldap/test',"AdldapController@test");
 
 Route::group(['namespace' => 'Admin', 'middleware' => 'auth'], function() {
 
