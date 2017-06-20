@@ -13,7 +13,7 @@ class PingGoogleIp extends Command
      *
      * @var string
      */
-    protected $signature = 'pingGoogleIp';
+    protected $signature = 'PingGoogleIp';
 
     /**
      * Create a new command instance.
@@ -37,36 +37,58 @@ class PingGoogleIp extends Command
     {
         // $this->pingGoogleIncIp2();
         $ipArr = [
-            '172.217.24.*',
-            '216.58.193.*',
-            '216.58.200.*',
+            // '172.217.24.*',
+            // '216.58.193.*',
+            // '216.58.194.*',
+            // '216.58.195.*',
+            // '216.58.196.*',
+            // '216.58.197.*',
+            // '216.58.198.*',
+            // '216.58.199.*',
+            // '216.58.200.*',
+            '74.125.24.*',
+            '37.61.54.*',
         ];
 
         echo date('Y-m-d H:i:s') . substr((string) microtime(), 1, 6), "\r\n";
         $results = [];
+        $times = [];
         foreach ($ipArr as $findIp) {
-            // $endIp = @end(@explode('.', $findIp));
             for ($i = 0; $i < 256; $i++) {
                 $ip = str_replace('*', $i, $findIp);
                 $pingRes = $this->curlIp($ip);
                 if ($pingRes > 0) {
-                    $results[$ip] = 1;
+                    $results[$ip]['count'] = 1;
+                    $times[$ip][] = $pingRes;
                 }
 
             }
         }
+
+        // $results = [
+        //     '216.58.200.15' => [],
+        //     '216.58.199.234' => [],
+        //     '216.58.196.21' => [],
+        //     '216.58.200.1' => [],
+        //     '216.58.200.225' => [],
+        // ];
+
         $resFile = "PingGoogleIp.log";
         Storage::put($resFile, indentToJson($results) . "\r\n" . date('Y-m-d H:i:s'));
 
         while (true) {
-            foreach ($results as $ip => $count) {
+            foreach ($results as $ip => $data) {
                 $pingRes = $this->curlIp($ip);
                 if ($pingRes > 0) {
-                    $results[$ip]++;
+                    $times[$ip][] = $pingRes;
+                    $results[$ip]['count']++;
+                    $results[$ip]['avg_time'] = array_sum($times[$ip]) / count($times[$ip]);
                 }
             }
-
-            asort($results);
+            uasort($results, function ($a, $b) {
+                if ($a['count'] == $b['count']) return 0;
+                return ($a['count'] > $b['count']) ? 1 : -1;
+            });
             Storage::put($resFile, indentToJson($results) . "\r\n" . date('Y-m-d H:i:s'));
         }
     }
@@ -177,20 +199,30 @@ If-None-Match: "6edea02fefcf650100488a706351f137"',
 
     function curlIp($ip)
     {
-        $url = "http://$ip";
+        $url = "https://$ip/ncr";
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
+        // 设置超时
+        curl_setopt($ch, CURLOPT_NOSIGNAL, 1);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT_MS, 333);
-        curl_setopt($ch, CURLOPT_TIMEOUT_MS, 999);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 1);
+        // 请求 www.google.com 指到 $ip
+        $header = array(
+                'X-Forwarded-For: 1.1.1.1',
+                'Host: www.google.com'
+            );
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
         curl_setopt($ch, CURLOPT_HEADER, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_NOBODY, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         $response = curl_exec($ch);
         $time = curl_getinfo($ch, CURLINFO_TOTAL_TIME);
         curl_close($ch);
         // print
         $headerArr = explode("\n", $response);
-        if (strpos($headerArr[0], '301') && strpos($headerArr[1], 'google.com')) {
+        if (strpos($headerArr[0], '302') && strpos($headerArr[1], 'google.com')) {
             $res = "success";
         } else {
             $res = "failure";
@@ -198,7 +230,7 @@ If-None-Match: "6edea02fefcf650100488a706351f137"',
         echo $print = "$ip $res $time \r\n\r\n$response";
         // $res == 'success' && die();    // test
         Storage::put('tmp', $print);
-        return $res == 'success' ? 1 :
+        return $res == 'success' ? $time :
             ($response == '' ? -1 : -2);
     }
 
