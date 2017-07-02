@@ -18,6 +18,7 @@ class Kernel extends ConsoleKernel
         \App\Console\Commands\Stock::class,
         \App\Console\Commands\Service::class,
         \App\Console\Commands\PingGoogleIp::class,
+        \App\Console\Commands\BingImage::class,
         \App\Console\Commands\Test::class
     ];
 
