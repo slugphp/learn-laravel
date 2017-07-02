@@ -12,6 +12,13 @@ class Controller extends BaseController
 {
     use AuthorizesRequests, AuthorizesResources, DispatchesJobs, ValidatesRequests;
 
+    public function missingMethod($parameters = [])
+    {
+        if (method_exists($this, $parameters[0])) {
+            $this->$parameters[0]();
+        }
+    }
+
     protected function whereParam($query)
     {
         $kwd = trim($_GET['search']);
