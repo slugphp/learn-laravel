@@ -30,6 +30,30 @@ class Test extends Command
      */
     public function handle()
     {
-        echo 123;
+        $client = new \GuzzleHttp\Client();
+        $request = new \GuzzleHttp\Psr7\Request('GET', 'https://www.github.com');
+        echo date('Y-m-d H:i:s') . substr((string) microtime(), 1, 6), br();
+        $promise = $client->sendAsync($request)->then(function ($response) {
+            echo 'I completed! 233 ' . $response->getStatusCode(), br();
+            echo date('Y-m-d H:i:s') . substr((string) microtime(), 1, 6), br();
+        });
+        $promise = $client->sendAsync($request)->then(function ($response) {
+            echo 'I completed! 234 ' . $response->getStatusCode(), br();
+            echo date('Y-m-d H:i:s') . substr((string) microtime(), 1, 6), br();
+        });
+        $promise = $client->sendAsync($request)->then(function ($response) {
+            echo 'I completed! 235 ' . $response->getStatusCode(), br();
+            echo date('Y-m-d H:i:s') . substr((string) microtime(), 1, 6), br();
+        });
+        $promise = $client->sendAsync($request)->then(function ($response) {
+            echo 'I completed! 236 ' . $response->getStatusCode(), br();
+            echo date('Y-m-d H:i:s') . substr((string) microtime(), 1, 6), br();
+        });
+        // $promise233->wait();
+        // $promise234->wait();
+        // $promise235->wait();
+        $promise->wait();
+        echo "Waiting...", br();
+        echo date('Y-m-d H:i:s') . substr((string) microtime(), 1, 6), br();
     }
 }

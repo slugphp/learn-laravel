@@ -35,103 +35,124 @@ class PingGoogleIp extends Command
      */
     public function handle()
     {
-        // $this->pingGoogleIncIp2();
+        $this->poolPing();die;
+
         $ipArr = [
-            // '172.217.24.*',
-            // '216.58.193.*',
-            // '216.58.194.*',
-            // '216.58.195.*',
-            // '216.58.196.*',
-            // '216.58.197.*',
-            // '216.58.198.*',
-            // '216.58.199.*',
-            // '216.58.200.*',
-            '74.125.24.*',
-            '37.61.54.*',
+            '172.217.17.*',
+            '172.217.24.*',
+            '172.217.25.*',
+            '172.217.27.*',
+            '172.217.5.*',
+            '203.208.39.*',
+            '216.58.192.*',
+            '216.58.199.*',
+            '216.58.200.*',
+            '216.58.206.*',
+            '216.58.217.*',
+            '216.58.219.*',
         ];
 
-        echo date('Y-m-d H:i:s') . substr((string) microtime(), 1, 6), "\r\n";
-        $results = [];
+        $results['time'] = ['start' => date('Y-m-d H:i:s')];
         $times = [];
+        $resFile = "PingGoogleIp.log";
         foreach ($ipArr as $findIp) {
             for ($i = 0; $i < 256; $i++) {
                 $ip = str_replace('*', $i, $findIp);
                 $pingRes = $this->curlIp($ip);
                 if ($pingRes > 0) {
-                    $results[$ip]['count'] = 1;
-                    $times[$ip][] = $pingRes;
+                    $results['ping'][$ip]['count'] = 1;
+                    $results['ping'][$ip]['avg_time'] = $times[$ip][] = $pingRes;
                 }
-
+                $results['time']['1CircleDone'] = date('Y-m-d H:i:s');
+                Storage::put($resFile, indentToJson($results));
             }
         }
 
-        // $results = [
-        //     '216.58.200.15' => [],
-        //     '216.58.199.234' => [],
-        //     '216.58.196.21' => [],
-        //     '216.58.200.1' => [],
-        //     '216.58.200.225' => [],
-        // ];
+        Storage::put($resFile, indentToJson($results));
 
-        $resFile = "PingGoogleIp.log";
-        Storage::put($resFile, indentToJson($results) . "\r\n" . date('Y-m-d H:i:s'));
-
-        while (true) {
-            foreach ($results as $ip => $data) {
+        for ($i = 2; $i < 12; $i++) {
+            foreach ($results['ping'] as $ip => $data) {
                 $pingRes = $this->curlIp($ip);
                 if ($pingRes > 0) {
                     $times[$ip][] = $pingRes;
-                    $results[$ip]['count']++;
-                    $results[$ip]['avg_time'] = array_sum($times[$ip]) / count($times[$ip]);
+                    $results['ping'][$ip]['count']++;
+                    $results['ping'][$ip]['avg_time'] = array_sum($times[$ip]) / count($times[$ip]);
                 }
             }
             uasort($results, function ($a, $b) {
                 if ($a['count'] == $b['count']) return 0;
                 return ($a['count'] > $b['count']) ? 1 : -1;
             });
-            Storage::put($resFile, indentToJson($results) . "\r\n" . date('Y-m-d H:i:s'));
+            $results['time']["{$i}CircleDone"] = date('Y-m-d H:i:s');
+            Storage::put($resFile, indentToJson($results));
         }
     }
 
-    public function pingGoogleIncIp2()
+    public function poolPing()
     {
-        $response = simpleCurl('http://bgp.he.net/jc', [
-                'method' => 'post',
-                'data' => 'p=f1758a4305e233c2c301dba2e9a0fdafd71&i=730faac111ec8cc6f52f6f0611fc27a4',
-                'header' => '
-Cookie:path=BAgiNC9zZWFyY2g%2Fc2VhcmNoJTVCc2VhcmNoJTVEPUdvb2dsZSZjb21taXQ9U2VhcmNo--cdc6217ffa439a08ce775442e5e72ec656a136d9
-',
-                'return' => 'all',
-            ]);
-        die(simple_dump($response));
-        $url = 'http://bgp.he.net/search?search%5Bsearch%5D=Google&commit=Search';
-        $content = simpleCurl($url, [
-                'header22' => 'GET /search?search%5Bsearch%5D=17house&commit=Search HTTP/1.1
-Host: bgp.he.net
-Connection: keep-alive
-Cache-Control: max-age=0
-Upgrade-Insecure-Requests: 1
-User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
-Referer: http://bgp.he.net/search?search%5Bsearch%5D=Google&commit=Search
-Accept-Encoding: gzip, deflate, sdch
-Accept-Language: en,zh-CN;q=0.8,zh;q=0.6,zh-TW;q=0.4,mt;q=0.2,fr;q=0.2,pt;q=0.2,ja;q=0.2,da;q=0.2,pl;q=0.2
-Cookie: c=BAgiEDIxMC41MS4xOS4y--a5feae0544685749177d639d35cb84cdd04dec0a; _bgp_session=BAh7BjoPc2Vzc2lvbl9pZEkiJWYyZTllYTdmMzFjYWVjNGRjNDRmYjgxNjg2ZjVlMGMyBjoGRUY%3D--eb0df37006be288bdbf6c073539a8956188c2760
-If-None-Match: "6edea02fefcf650100488a706351f137"',
-                'return' => 'all'
-            ]);
-        preg_match_all('/(\d+\.\d+\.\d+\.)(\d+)\/(\d+)/iUs', $content, $matches);
-        $ipArr = array_values(array_unique($matches[1]));
-        shuffle($ipArr);
-        die(simple_dump($content));
-        foreach ($ipArr as $ipPre) {
+        $start = date('Y-m-d H:i:s') . substr((string) microtime(), 1, 6);
+
+        // 获取IP列表
+        $findIpArr = [
+            '172.217.17.*',
+            '172.217.24.*',
+            '172.217.25.*',
+            '172.217.27.*',
+            '172.217.5.*',
+            '203.208.39.*',
+            '216.58.192.*',
+            '216.58.199.*',
+            '216.58.200.*',
+            '216.58.206.*',
+            '216.58.217.*',
+            '216.58.219.*',
+        ];
+        $ipArr = [];
+        foreach ($findIpArr as $findIp) {
             for ($i = 0; $i < 256; $i++) {
-                $ip = $ipPre . $i;
-                // 时间判断失败
-                $pingRes = $this->curlIp($ip);
-                if ($pingRes == -2) continue 2;
+                $ip = str_replace('*', $i, $findIp);
+                $ipArr[] = $ip;
             }
         }
+
+        Storage::append('google.log', "====== start $start ======");
+
+        // 异步请求池
+        $requests = function ($ipArr) {
+            foreach ($ipArr as $ip) {
+                yield new \GuzzleHttp\Psr7\Request('GET', "https://$ip/ncr");
+            }
+        };
+        $client = new \GuzzleHttp\Client();
+        $pool = new \GuzzleHttp\Pool($client, $requests($ipArr), [
+            'concurrency' => 20,
+            'fulfilled' => function ($response, $index) use ($ipArr) {
+                if ($response->getStatusCode() == 302) {
+                    Storage::append('google.log', $ipArr[$index]);
+                }
+            },
+            'rejected' => function ($reason, $index) {
+                \Log::info("rejected $index", [$reason]);
+            },
+            'options' => [
+                'headers' => [
+                    'X-Forwarded-For' => '1.1.1.1',
+                    'Host' => 'www.google.com'
+                ],
+                'verify' => false,
+                'allow_redirects' => false,
+                'curl' => [
+                    CURLOPT_CONNECTTIMEOUT_MS => 333
+                ],
+                'timeout' => 1,
+            ]
+        ]);
+        $pool->promise()->wait();
+
+        $end = date('Y-m-d H:i:s') . substr((string) microtime(), 1, 6);
+        Storage::append('google.log', "====== end $end ======\r\n");
+        echo $start, "\r\n", $end;
+
     }
 
     public function traversalAllIpAddress()
@@ -227,11 +248,16 @@ If-None-Match: "6edea02fefcf650100488a706351f137"',
         } else {
             $res = "failure";
         }
-        echo $print = "$ip $res $time \r\n\r\n$response";
+        echo $print = "$ip $res $time $response";
         // $res == 'success' && die();    // test
         Storage::put('tmp', $print);
         return $res == 'success' ? $time :
             ($response == '' ? -1 : -2);
+    }
+
+    function __destruct()
+    {
+
     }
 
 }
