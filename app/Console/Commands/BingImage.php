@@ -37,11 +37,12 @@ class BingImage extends Command
         $bing = file_get_contents($url);
         // get image
         $isMatched = preg_match('/g_img\=\{url\:\s+\"(.*?)\",/i', $bing, $matches);
+        if (!$isMatched) return;
         $imageUrl = $url . $matches[1];
         $imageContent = file_get_contents($imageUrl);
+        if (!$imageContent) return;
         // save
         $imageName = md5($imageUrl) . '.' . pathinfo($imageUrl)['extension'];
         \Storage::disk('public')->put("BingImage/$imageName", $imageContent);
-        simple_dump( $imageName, $imageUrl);
     }
 }

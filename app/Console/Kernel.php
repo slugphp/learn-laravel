@@ -16,9 +16,9 @@ class Kernel extends ConsoleKernel
         Commands\Inspire::class,
         \App\Console\Commands\RegisterUser::class,
         \App\Console\Commands\Stock::class,
-        \App\Console\Commands\Service::class,
         \App\Console\Commands\PingGoogleIp::class,
         \App\Console\Commands\BingImage::class,
+        \App\Console\Commands\Request::class,
         \App\Console\Commands\Test::class
     ];
 
@@ -30,7 +30,13 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')
-        //          ->hourly();
+        // echo "Start at ", date('Y-m-d H:i:s'), '  ';
+        // 检测lantern更新
+        $schedule->call(function () {
+            $lantern = new \App\Models\sendLanternEmail;
+            $lantern->check();
+        })->cron('* */1 * * * *');
+        // 更新壁纸
+        $schedule->command('BingImage')->cron('* */5 * * * *');
     }
 }

@@ -1,5 +1,13 @@
 <?php
 
+function br()
+{
+    //windows平台相当于    echo "\r\n";
+    //unix\linux平台相当于    echo "\n";
+    //mac平台相当于    echo "\r";
+    return PHP_SAPI == 'cli' ? PHP_EOL : '<br>';
+}
+
 /**
  * 缩进数据，以json在HTML上展示
  */
