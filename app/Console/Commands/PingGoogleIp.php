@@ -35,21 +35,11 @@ class PingGoogleIp extends Command
      */
     public function handle()
     {
-        $this->poolPing();die;
+        // $this->poolPing();die;
 
         $ipArr = [
-            '172.217.17.*',
-            '172.217.24.*',
-            '172.217.25.*',
-            '172.217.27.*',
-            '172.217.5.*',
-            '203.208.39.*',
-            '216.58.192.*',
-            '216.58.199.*',
+            '173.194.223.*',
             '216.58.200.*',
-            '216.58.206.*',
-            '216.58.217.*',
-            '216.58.219.*',
         ];
 
         $results['time'] = ['start' => date('Y-m-d H:i:s')];
@@ -248,7 +238,7 @@ class PingGoogleIp extends Command
         } else {
             $res = "failure";
         }
-        echo $print = "$ip $res $time $response";
+        echo $print = "$ip $res $time \r\n";
         // $res == 'success' && die();    // test
         Storage::put('tmp', $print);
         return $res == 'success' ? $time :
