@@ -13,7 +13,7 @@ use GuzzleHttp\Client as Http;
  * 将lantern.exe & apk 发送到邮箱
  * 以供网络不好的地方使用
  */
-class sendLanternEmail
+class SendLanternEmail
 {
     protected $commitsUrl = 'https://api.github.com/repos/getlantern/lantern-binaries/commits';
     protected $exeUrl = 'https://raw.githubusercontent.com/getlantern/lantern-binaries/master/lantern-installer-beta.exe';
@@ -22,6 +22,10 @@ class sendLanternEmail
 
     function check()
     {
+
+        \Log::getMonolog()->popHandler();
+        \Log::useFiles('storage/logs/SendLanternEmail.log');
+
         // 获取缓存
         $key = 'lantern_last_commit';
         $oldCommits = Cache::get($key);
@@ -32,11 +36,11 @@ class sendLanternEmail
         $lastCommits = json_decode($res, true)[0];
 
         if (empty($lastCommits)) {
-            Log::info('sendLanternEmail Get commit error', [$res]);
+            Log::info('SendLanternEmail Get commit error', [$res]);
             return;
         }
         if ($oldCommits['sha'] == $lastCommits['sha']) {
-            Log::info('sendLanternEmail No commit', $lastCommits['commit']);
+            Log::info('SendLanternEmail No commit', $lastCommits['commit']);
             return;
         }
 
@@ -64,7 +68,7 @@ class sendLanternEmail
                 $message->attach("{$storagePath}{$exeFile}");
         });
         $log['subject'] = $subject;
-        Log::info('sendLanternEmail New commit', $log);
+        Log::info('SendLanternEmail New commit', $log);
         Cache::forever($key, $lastCommits);
     }
 

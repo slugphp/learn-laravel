@@ -220,7 +220,7 @@ class PingGoogleIp extends Command
 
     function curlIp($ip)
     {
-        $url = "https://$ip/ncr";
+        $url = "https://$ip/humans.txt";
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         // 设置超时
@@ -243,6 +243,7 @@ class PingGoogleIp extends Command
         curl_close($ch);
         // print
         $headerArr = explode("\n", $response);
+        ob_start();$s=array($headerArr, $response);foreach($s as $v){var_dump($v);}die('<pre style="white-space:pre-wrap;word-wrap:break-word;">'.preg_replace(array('/\]\=\>\n(\s+)/m','/</m','/>/m'),array('] => ','&lt;','&gt;'),ob_get_clean()).'');
         if (strpos($headerArr[0], '302') && strpos($headerArr[1], 'google.com')) {
             $res = "success";
         } else {

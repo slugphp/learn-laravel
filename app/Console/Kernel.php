@@ -30,13 +30,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // echo "Start at ", date('Y-m-d H:i:s'), '  ';
         // 检测lantern更新
         $schedule->call(function () {
-            $lantern = new \App\Models\sendLanternEmail;
-            $lantern->check();
-        })->cron('* */1 * * * *');
+            (new \App\Models\SendLanternEmail)->check();
+        })->cron('0 */1 * * * *');
         // 更新壁纸
-        $schedule->command('BingImage')->cron('* */5 * * * *');
+        $schedule->command('BingImage')->cron('0 */5 * * * *');
     }
 }

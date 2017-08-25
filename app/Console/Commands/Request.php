@@ -55,6 +55,33 @@ class Request extends Command
 
     }
 
+    public function postAsync()
+    {
+        $client = new \GuzzleHttp\Client();
+        $url = 'http://127.0.0.1/';
+        for ($i=0; $i < 1000; $i++) {
+            $data = [];
+            $data[] = $i;
+            $data[] = time();
+            $promise = $client->postAsync($url, ['json' => $data]);
+            echo $i, ' ';
+        }
+        try {
+            $promise->wait();
+        } catch (\Exception $e) {
+            $promise->wait();
+            echo 'error1 ';
+        } catch (\GuzzleHttp\Exception $e) {
+            echo 'error2 ';
+        } catch (\GuzzleHttp\Exception\ServerException $e) {
+            echo 'ServerException ';
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
+            echo 'RequestException ';
+        } finally {
+            echo "Finally.\n";
+        }
+    }
+
     public function ping()
     {
         $url = 'http://www.google.com/';
@@ -65,30 +92,38 @@ class Request extends Command
 
     public function pool()
     {
+        $start = microtime(true);
+
         $client = new \GuzzleHttp\Client();
 
         $requests = function ($total) {
-            $uri = 'http://127.0.0.1:8126/guzzle-server/perf';
+            $uri = 'http://127.0.0.1/';
             for ($i = 0; $i < $total; $i++) {
-                yield new \GuzzleHttp\Psr7\Request('GET', $uri);
+                $data = [];
+                $data['i'] = $i;
+                $data['t'] = time();
+                yield new \GuzzleHttp\Psr7\Request(
+                    'POST',
+                    $uri,
+                    ['Content-Type' => 'application/x-www-form-urlencoded; charset=UTF-8'],
+                    http_build_query($data)
+                );
             }
         };
 
-        $pool = new \GuzzleHttp\Pool($client, $requests(100), [
-            'concurrency' => 5,
+        $pool = new \GuzzleHttp\Pool($client, $requests(5), [
+            'concurrency' => 200,
             'fulfilled' => function ($response, $index) {
-                // this is delivered each successful response
+                var_dump('success ' . $response->getBody());
             },
             'rejected' => function ($reason, $index) {
-                // this is delivered each failed request
+                var_dump('error ' . $index);
             },
         ]);
 
-        // Initiate the transfers and create a promise
         $promise = $pool->promise();
-
-        // Force the pool of requests to complete.
         $promise->wait();
+        echo microtime(true) - $start;
     }
 
 
