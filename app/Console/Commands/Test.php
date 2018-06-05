@@ -30,6 +30,9 @@ class Test extends Command
      */
     public function handle()
     {
+        // (new \App\Models\Lantern)->checkUpdate();
+        (new \App\Models\Lantern)->checkNewIssues();
+        die;
         $client = new \GuzzleHttp\Client();
         $request = new \GuzzleHttp\Psr7\Request('GET', 'https://www.github.com');
         echo date('Y-m-d H:i:s') . substr((string) microtime(), 1, 6), br();

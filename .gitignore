@@ -5,3 +5,6 @@ Homestead.yaml
 Homestead.json
 .env
 nohup.out
+
+public/BingImage/*.jpg
+.DS_Store

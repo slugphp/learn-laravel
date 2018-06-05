@@ -35,11 +35,34 @@ class PingGoogleIp extends Command
      */
     public function handle()
     {
-        // $this->poolPing();die;
-
         $ipArr = [
-            '173.194.223.*',
-            '216.58.200.*',
+            "108.177.97.*",
+            "172.217.20.*",
+            "172.217.24.*",
+            "172.217.27.*",
+            "172.217.4.*",
+            "172.217.5.*",
+            "172.217.8.*",
+            "172.217.9.*",
+            "203.208.39.*",
+            "216.58.192.*",
+            "216.58.193.*",
+            "216.58.197.*",
+            "216.58.199.*",
+            "216.58.200.*",
+            "216.58.203.*",
+            "216.58.208.*",
+            "216.58.216.*",
+            "216.58.217.*",
+            "216.58.219.*",
+            "216.58.221.*",
+            "46.82.174.*",
+            "59.24.3.*",
+            "74.125.200.*",
+            "74.125.23.*",
+            "78.16.49.*",
+            "8.7.198.*",
+            "93.46.8.*",
         ];
 
         $results['time'] = ['start' => date('Y-m-d H:i:s')];
@@ -61,6 +84,7 @@ class PingGoogleIp extends Command
         Storage::put($resFile, indentToJson($results));
 
         for ($i = 2; $i < 12; $i++) {
+            if (!array_key_exists('ping', $results['ping'])) break;
             foreach ($results['ping'] as $ip => $data) {
                 $pingRes = $this->curlIp($ip);
                 if ($pingRes > 0) {
@@ -76,136 +100,6 @@ class PingGoogleIp extends Command
             $results['time']["{$i}CircleDone"] = date('Y-m-d H:i:s');
             Storage::put($resFile, indentToJson($results));
         }
-    }
-
-    public function poolPing()
-    {
-        $start = date('Y-m-d H:i:s') . substr((string) microtime(), 1, 6);
-
-        // 获取IP列表
-        $findIpArr = [
-            '172.217.17.*',
-            '172.217.24.*',
-            '172.217.25.*',
-            '172.217.27.*',
-            '172.217.5.*',
-            '203.208.39.*',
-            '216.58.192.*',
-            '216.58.199.*',
-            '216.58.200.*',
-            '216.58.206.*',
-            '216.58.217.*',
-            '216.58.219.*',
-        ];
-        $ipArr = [];
-        foreach ($findIpArr as $findIp) {
-            for ($i = 0; $i < 256; $i++) {
-                $ip = str_replace('*', $i, $findIp);
-                $ipArr[] = $ip;
-            }
-        }
-
-        Storage::append('google.log', "====== start $start ======");
-
-        // 异步请求池
-        $requests = function ($ipArr) {
-            foreach ($ipArr as $ip) {
-                yield new \GuzzleHttp\Psr7\Request('GET', "https://$ip/ncr");
-            }
-        };
-        $client = new \GuzzleHttp\Client();
-        $pool = new \GuzzleHttp\Pool($client, $requests($ipArr), [
-            'concurrency' => 20,
-            'fulfilled' => function ($response, $index) use ($ipArr) {
-                if ($response->getStatusCode() == 302) {
-                    Storage::append('google.log', $ipArr[$index]);
-                }
-            },
-            'rejected' => function ($reason, $index) {
-                \Log::info("rejected $index", [$reason]);
-            },
-            'options' => [
-                'headers' => [
-                    'X-Forwarded-For' => '1.1.1.1',
-                    'Host' => 'www.google.com'
-                ],
-                'verify' => false,
-                'allow_redirects' => false,
-                'curl' => [
-                    CURLOPT_CONNECTTIMEOUT_MS => 333
-                ],
-                'timeout' => 1,
-            ]
-        ]);
-        $pool->promise()->wait();
-
-        $end = date('Y-m-d H:i:s') . substr((string) microtime(), 1, 6);
-        Storage::append('google.log', "====== end $end ======\r\n");
-        echo $start, "\r\n", $end;
-
-    }
-
-    public function traversalAllIpAddress()
-    {
-        $key = 'ping-iplong-2017-06-14';
-        $ipLong = Cache::get($key) ?: 0;
-        while ($ipLong < 4294967295) {
-            if ($skipIplong = $this->isIplongInnerUse($ipLong)) {
-                $ipLong = $skipIplong;
-                continue;
-            }
-            $ipAddress = long2ip($ipLong);
-            $pingRes = $this->curlIp($ipAddress);
-            if ($pingRes > 0) {    // 成功
-                Storage::append('google-ip-address', "$ipAddress \r\n");
-                $nextIplong = $ipLong + (255 - end(explode('.', $ipAddress))) + 1;
-                $ipLong = $nextIplong;
-            } else if ($pingRes == -2) {    // 有反应不是这段
-                $nextIplong = $ipLong + (255 - end(explode('.', $ipAddress))) + 1;
-                $ipLong = $nextIplong;
-            } else {    // 没反应
-                $ipLong++;
-            }
-            Cache::forever($key, $ipLong);
-        }
-    }
-
-    function isIplongInnerUse($ipLong)
-    {
-        // 0.0.0.0 – 0.255.255.255  软件
-        if ($ipLong >= 0 && $ipLong <= 16777215) return 16777215 + 1;
-        // 10.0.0.0 – 10.255.255.255  专用网络
-        if ($ipLong >= 167772160 && $ipLong <= 184549375) return 184549375 + 1;
-        // 100.64.0.0 – 100.127.255.255  专用网络
-        if ($ipLong >= 1681915904 && $ipLong <= 1686110207) return 1686110207 + 1;
-        // 127.0.0.0 – 127.255.255.255  主机
-        if ($ipLong >= 2130706432 && $ipLong <= 2147483647) return 2147483647 + 1;
-        // 169.254.0.0 – 169.254.255.255  子网
-        if ($ipLong >= 2851995648 && $ipLong <= 2852061183) return 2852061183 + 1;
-        // 172.16.0.0 – 172.31.255.255  专用网络
-        if ($ipLong >= 2886729728 && $ipLong <= 2887778303) return 2887778303 + 1;
-        // 192.0.0.0 – 192.0.0.255  专用网络
-        if ($ipLong >= 3221225472 && $ipLong <= 3221225727) return 3221225727 + 1;
-        // 192.0.2.0 – 192.0.2.255  文档
-        if ($ipLong >= 3221225984 && $ipLong <= 3221226239) return 3221226239 + 1;
-        // 192.88.99.0 – 192.88.99.255  互联网
-        if ($ipLong >= 3227017984 && $ipLong <= 3227018239) return 3227018239 + 1;
-        // 192.168.0.0 – 192.168.255.255  专用网络
-        if ($ipLong >= 3232235520 && $ipLong <= 3232301055) return 3232301055 + 1;
-        // 198.18.0.0 – 198.19.255.255  专用网络
-        if ($ipLong >= 3323068416 && $ipLong <= 3323199487) return 3323199487 + 1;
-        // 198.51.100.0 – 198.51.100.255  文档
-        if ($ipLong >= 3325256704 && $ipLong <= 3325256959) return 3325256959 + 1;
-        // 203.0.113.0 – 203.0.113.255  文档
-        if ($ipLong >= 3405803776 && $ipLong <= 3405804031) return 3405804031 + 1;
-        // 224.0.0.0 – 239.255.255.255  互联网
-        if ($ipLong >= 3758096384 && $ipLong <= 4026531839) return 4026531839 + 1;
-        // 240.0.0.0 – 255.255.255.254  互联网
-        if ($ipLong >= 4026531840 && $ipLong <= 4294967294) return 4294967294 + 1;
-        // 255.255.255.255  子网
-        if ($ipLong == 4294967295) return 4294967295 + 1;
-
-        return false;
     }
 
     function curlIp($ip)
@@ -233,8 +127,7 @@ class PingGoogleIp extends Command
         curl_close($ch);
         // print
         $headerArr = explode("\n", $response);
-        ob_start();$s=array($headerArr, $response);foreach($s as $v){var_dump($v);}die('<pre style="white-space:pre-wrap;word-wrap:break-word;">'.preg_replace(array('/\]\=\>\n(\s+)/m','/</m','/>/m'),array('] => ','&lt;','&gt;'),ob_get_clean()).'');
-        if (strpos($headerArr[0], '302') && strpos($headerArr[1], 'google.com')) {
+        if (strpos($headerArr[0], '200')) {
             $res = "success";
         } else {
             $res = "failure";
@@ -244,11 +137,6 @@ class PingGoogleIp extends Command
         Storage::put('tmp', $print);
         return $res == 'success' ? $time :
             ($response == '' ? -1 : -2);
-    }
-
-    function __destruct()
-    {
-
     }
 
 }

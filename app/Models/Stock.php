@@ -112,6 +112,11 @@ class Stock
         return $data;
     }
 
+    /**
+     * 获取自选股评论
+     *
+     * @return
+     */
     public function getQqComment()
     {
         $url = 'http://web.group.finance.qq.com/newstockgroup/webRssService/getWebRssList2?stock_id=';
