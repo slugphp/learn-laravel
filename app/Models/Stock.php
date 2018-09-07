@@ -4,10 +4,16 @@ namespace App\Models;
 
 use DB;
 use GuzzleHttp\Client as Http;
-use DiDom\Document;
+use Log;
 
 class Stock
 {
+    function __construct()
+    {
+        Log::getMonolog()->popHandler();
+        Log::useFiles(base_path('storage/logs/stock.log'));
+    }
+
     public function __get($name)
     {
         switch ($name) {
@@ -254,5 +260,33 @@ class Stock
         }
         echo date('Y-m-d H:i:s') . substr((string) microtime(), 1, 6), "\r\n";
         echo "Total ", count($qqComment), "\r\n";
+    }
+
+    /**
+     * 新股申购提醒
+     */
+    public function noticeNew()
+    {
+        $url = 'http://web.ifzq.gtimg.cn/stock/xingu/xgrl/xgql?type=all&page=1&psize=20&col=sgrq&order=desc&_var=v_xgql';
+        $http = new Http();
+        $res = (string) $http->get($url)->getBody();
+        $jsonRes = str_replace('v_xgql=', '', $res);
+        $data = json_decode($jsonRes, true);
+        throw new \Exception('QQ xingu api error~', 1);
+        if ($data['code'] !== 0) {
+            throw new \Exception('QQ xingu api error~', 1);
+        }
+        foreach ($data['data']['data'] as $stock) {
+            if ($stock['sgrq'] == date('Y-m-d')) {
+                // 发送邮件
+                $log = [];
+                $subject = "新股申购提醒：{$stock['zqdm']} {$stock['zqjc']}";
+                $content = "新股申购提醒：{$stock['zqdm']} {$stock['zqjc']}";
+                $log['send_mail_res'] = send_mail($subject, $content);
+                $log['subject'] = $subject;
+                Log::info('QQ xingu', $log);
+                return;
+            }
+        }
     }
 }

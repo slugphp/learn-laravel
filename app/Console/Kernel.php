@@ -41,6 +41,24 @@ class Kernel extends ConsoleKernel
             (new \App\Models\Lantern)->checkUpdate();
         })->cron('*/31 * * * *');
 
+        // 新的DNF公告、活动邮件通知给我
+        $schedule->call(function () {
+            (new \App\Models\Dnf)->checkNews();
+        })->cron('*/29 * * * *');
+
+        // 5173 new role
+        $schedule->call(function () {
+            (new \App\Models\Game5173)->checkCheapDNFRole();
+        })->cron('32 * * * *');
+
+        // stock new
+        $schedule->call(function () {
+            (new \App\Models\Stock)->noticeNew();
+        })->cron('1 11,13 * * 1-5');
+
+        // 更新壁纸
+        $schedule->command('BingImage')->cron('7 */3 * * *');
+
         // 检测 getlantern/forum 精华 issue
         // $schedule->call(function () {
         //     (new \App\Models\Lantern)->checkNewIssues();
@@ -51,17 +69,9 @@ class Kernel extends ConsoleKernel
         //     (new \App\Models\Lantern)->checkNewAd();
         // })->cron('*/19 * * * *');
 
-        // 新的DNF公告、活动邮件通知给我
-        $schedule->call(function () {
-            (new \App\Models\Dnf)->checkNews();
-        })->cron('*/23 * * * *');
-
-        // 新的DNF公告、活动邮件通知给我
-        $schedule->call(function () {
-            (new \App\Models\Damai)->checkLijian();
-        })->cron('59 * * * *');
-
-        // 更新壁纸
-        $schedule->command('BingImage')->cron('7 */3 * * *');
+        // 新的ljian演唱会通知我
+        // $schedule->call(function () {
+        //     (new \App\Models\Damai)->checkLijian();
+        // })->cron('59 * * * *');
     }
 }
