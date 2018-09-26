@@ -44,7 +44,7 @@ class Dnf
                 $new['url'] = path($this->baseUrl, $a->attr('href'));
                 $new['subject'] = $a->text();
                 $new['date'] = $span->text();
-                $new['key'] = substr(md5($new['url'].$new['subject']), 3, 9);
+                $new['key'] = substr(md5($new['url'].$new['subject']), 3, 7);
                 if (!Cache::get($new['key'])) {
                     $sendNews[] = $new;
                     Cache::forever($new['key'], $new);
@@ -64,15 +64,7 @@ class Dnf
             $content .= "<br><br> <a href='{$new['url']}'>{$new['date']} {$new['subject']}</a>";
         }
 
-        $log['send_mail_res'] = Mail::send(
-            'mailbody',                 // resources/views/mailbody.blade.php
-            ['body' => $content],       // views's var
-            function ($message) use ($subject) {
-                $message->from('wangweilong2020@163.com', 'Weilong的自动提醒');
-                $message->to('wilonx@163.com', '王伟龙');
-                // $message->to('wilonx@163.com', '王伟龙');
-                $message->subject($subject);
-        }) == 1;
+        $log['send_mail_res'] = sendMail($subject, $content);
         $log['subject'] = $subject;
         Log::info('Send Dnf News', $log);
     }

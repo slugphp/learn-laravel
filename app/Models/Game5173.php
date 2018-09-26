@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * 5173web
+ */
+
 namespace App\Models;
 
 use Cache;
@@ -11,6 +15,9 @@ class Game5173
 {
     protected $baseUrl = 'http://s.5173.com';
 
+    /**
+     * _con
+     */
     function __construct()
     {
         Log::getMonolog()->popHandler();
@@ -19,6 +26,8 @@ class Game5173
 
     /**
      * 新的
+     *
+     * @return boolean
      */
     public function checkCheapDNFRole()
     {
@@ -44,9 +53,9 @@ class Game5173
             $new = [];
             $new['href'] = $info->attr('href');
             $new['desc'] = trim($info->text());
-            $new['price'] = trim($role->first('.pdlist_price')->text());
+            $new['price'] = (int)trim($role->first('.pdlist_price')->text());
             // 没发过的去发送
-            $key = substr(md5(json_encode($new)), 3, 9);
+            $key = substr(md5(json_encode($new)), 3, 10);
             if (!Cache::get($key)) {
                 $sendNews[] = $new;
                 Cache::forever($key, $new);
@@ -62,11 +71,11 @@ class Game5173
         $subject = '5173 New Role role~~~';
         $content = "<br><br> <a href='$url'>$url</a>";
         foreach ($sendNews as $new) {
-            $content .= "<br><br> <a href='{$new['href']}'>{$new['price']} {$new['desc']}</a>";
+            $content .= "<br><br> <a href='{$new['href']}'>New: {$new['price']} {$new['desc']}</a>";
         }
-        $log['send_mail_res'] = send_mail($subject, $content);
+        $log['send_mail_res'] = sendMail($subject, $content);
         $log['subject'] = $subject;
         Log::info('Send 5173 New Role', $log);
+        return;
     }
-
 }

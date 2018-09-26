@@ -55,15 +55,7 @@ class Damai
             $content .= "<br><br> $k : $v";
         }
 
-        $log['send_mail_res'] = Mail::send(
-            'mailbody',                 // resources/views/mailbody.blade.php
-            ['body' => $content],       // views's var
-            function ($message) use ($subject) {
-                $message->from('wangweilong2020@163.com', 'Weilong的自动提醒');
-                $message->to('wilonx@163.com', '王伟龙');
-                // $message->to('wilonx@163.com', '王伟龙');
-                $message->subject($subject);
-        }) == 1;
+        $log['send_mail_res'] = sendMail($subject, $content);
         $log['subject'] = $subject;
         Log::info('Send Damai News', $log);
     }

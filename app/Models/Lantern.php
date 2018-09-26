@@ -48,7 +48,7 @@ class Lantern
     public function checkUpdate()
     {
         // 获取缓存
-        $key = 'lantern_last_commit_cache';
+        $key = 'lantern_last_commit_cache2';
         $oldCommits = Cache::get($key);
 
         // 获取最新commit
@@ -87,19 +87,14 @@ class Lantern
                 $oldCommits['commit'],
             ]);
 
-        $log['send_mail'] = Mail::raw(
-            $content,
-            function ($message) use ($subject, $exeFile, $dmgFile, $apkFile) {
-                $message->from('wangweilong2020@163.com', 'Learn-Laravel');
-                $message->to('wilonx@163.com', '王伟龙');
-                $message->subject($subject);
-                $storagePath  = Storage::getDriver()->getAdapter()->getPathPrefix();
-                $message->attach("{$storagePath}{$exeFile}");
-                $message->attach("{$storagePath}{$dmgFile}");
-                $message->attach("{$storagePath}{$apkFile}");
-        });
+        $storagePath  = Storage::getDriver()->getAdapter()->getPathPrefix();
+        $attachArr = [
+            $storagePath . $exeFile,
+            $storagePath . $dmgFile,
+            $storagePath . $apkFile,
+        ];
+        $log['send_mail'] = sendMail($subject, $content, $attachArr);
         $log['subject'] = $subject;
-        simpleDump($log);
         Log::info('SendLanternEmail New commit', $log);
         Cache::forever($key, $lastCommits);
     }
@@ -139,13 +134,7 @@ EOF;
                 ]);
             // email
             $subject = 'GetLantern-lantern 有新的精华or公告';
-            $log['send_mail_res'] = Mail::raw(
-                $issues['html_url'],
-                function ($message) use ($subject) {
-                    $message->from('wangweilong2020@163.com', 'Learn-Laravel');
-                    $message->to('wilonx@163.com', '王伟龙');
-                    $message->subject($subject);
-            });
+            $log['send_mail_res'] = sendMail($subject, $issues['html_url']);
             Log::info("New comment add.", $log);
         } else {
             Log::info("Have not new issue.", $log);

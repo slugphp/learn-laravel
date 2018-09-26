@@ -272,7 +272,6 @@ class Stock
         $res = (string) $http->get($url)->getBody();
         $jsonRes = str_replace('v_xgql=', '', $res);
         $data = json_decode($jsonRes, true);
-        throw new \Exception('QQ xingu api error~', 1);
         if ($data['code'] !== 0) {
             throw new \Exception('QQ xingu api error~', 1);
         }
@@ -282,7 +281,7 @@ class Stock
                 $log = [];
                 $subject = "新股申购提醒：{$stock['zqdm']} {$stock['zqjc']}";
                 $content = "新股申购提醒：{$stock['zqdm']} {$stock['zqjc']}";
-                $log['send_mail_res'] = send_mail($subject, $content);
+                $log['send_mail_res'] = sendMail($subject, $content);
                 $log['subject'] = $subject;
                 Log::info('QQ xingu', $log);
                 return;
