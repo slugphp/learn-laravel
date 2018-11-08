@@ -277,15 +277,23 @@ class Stock
         }
         foreach ($data['data']['data'] as $stock) {
             if ($stock['sgrq'] == date('Y-m-d')) {
-                // 发送邮件
+                // 发送新股邮件
                 $log = [];
-                $subject = "新股申购提醒：{$stock['zqdm']} {$stock['zqjc']}";
-                $content = "新股申购提醒：{$stock['zqdm']} {$stock['zqjc']}";
+                $subject = cnWeek() . date('D') . " 新股申购提醒：{$stock['zqdm']} {$stock['zqjc']}";
+                $content = $subject;
                 $log['send_mail_res'] = sendMail($subject, $content);
                 $log['subject'] = $subject;
                 Log::info('QQ xingu', $log);
                 return;
             }
         }
+        // 发送新股邮件
+        $log = [];
+        $subject = cnWeek() . date('D') . ' 今日无新股';
+        $content = $subject;
+        $log['send_mail_res'] = sendMail($subject, $content);
+        $log['subject'] = $subject;
+        Log::info('QQ xingu', $log);
+        return;
     }
 }

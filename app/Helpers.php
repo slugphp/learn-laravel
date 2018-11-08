@@ -20,7 +20,7 @@ function sendMail($subject = '', $content = '', $attacArr = [])
         'mailbody',
         ['body' => $content],
         function ($message) use ($subject) {
-            $message->from('wangweilong2020@163.com', '伟龙的自动提醒');
+            $message->from('wangweilong2020@163.com', 'no-reply');
             $message->to('973885303@qq.com', '王伟龙');
             $message->subject($subject);
             foreach ($attacArr as $attach) {
@@ -28,4 +28,8 @@ function sendMail($subject = '', $content = '', $attacArr = [])
             }
         }
     ) == 1;
+}
+
+function cnWeek() {
+    return '星期' . ['日', '一', '二', '三', '四', '五', '六'][date('w')];
 }

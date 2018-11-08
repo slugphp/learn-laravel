@@ -46,6 +46,20 @@ class Kernel extends ConsoleKernel
             (new \App\Models\Dnf)->checkNews();
         })->cron('*/29 * * * *');
 
+        // 新的DNF公告、活动邮件通知给我
+        $schedule->call(function () {
+            (new \App\Models\Dnf)->checkActivity();
+        })->cron('*/37 * * * *');
+
+        // 冒险团每周经验领一下哈
+        $schedule->call(function () {
+            $subject = $content = '冒险团每周经验领一下哈';
+            $log = [];
+            $log['send_mail_res'] = sendMail($subject, $content);
+            $log['subject'] = $subject;
+            Log::info('冒险团提醒', $log);
+        })->cron('10 22 * * 3');
+
         // 5173 new role
         $schedule->call(function () {
             (new \App\Models\Game5173)->checkCheapDNFRole();
